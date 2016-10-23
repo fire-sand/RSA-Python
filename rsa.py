@@ -118,18 +118,21 @@ def main():
 
     N = 100
 
+    # Exponentiation with Python built in pow function
     t = time.time()
     for i in xrange(N):
         s = sign(m, pow_func=pow)
         verify(m, s, pow_func=pow)
     print 'pow', time.time() - t
 
+    # Binary exponentiation (shift, square, and multiply)
     t = time.time()
     for i in xrange(N):
         s = sign(m, pow_func=pow_mod)
         verify(m, s, pow_func=pow_mod)
     print 'pow_mod', time.time() - t
 
+    # Montgomery (we call it mod_exp)
     t = time.time()
     for i in xrange(N):
         s = sign(m, pow_func=mod_exp)
