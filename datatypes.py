@@ -2,7 +2,7 @@
 _B = 4
 
 def size(num):
-    return len(str(num))
+    return num.bit_length()
 
 class Word(object):
 
