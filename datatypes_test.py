@@ -15,7 +15,19 @@ assert type(w1) == Word
 # Test Nat
 
 n1 = Nat(0)
-print [str(n) for n in n1.nat]
+print n1
 
 n1 = Nat(894)
-print [str(n) for n in n1.nat]
+print n1
+
+
+w1 = Word(0xF)
+w2 = Word(0xF)
+
+print w1.add(w2)
+
+z = Nat()
+x = Nat(100)
+y = Nat(0)
+
+print z.add(x, y)

@@ -1,5 +1,8 @@
 # Environment
 _B = 4
+HALF_WORD_SIZE = _B / 2
+LOWER_HALF_WORD_MASK = (1 << HALF_WORD_SIZE) - 1
+UPPER_HALF_WORD_MASK = LOWER_HALF_WORD_MASK << HALF_WORD_SIZE;
 
 def size(num):
     return num.bit_length()
@@ -35,13 +38,67 @@ class Word(object):
     def __int__(self):
         return self.word
 
+    def __nonzero__(self):
+        return bool(self.word)
+
+    def add(self, other):
+        a = self.word
+        b = other.word
+
+        a_l = a & LOWER_HALF_WORD_MASK
+        b_l = b & LOWER_HALF_WORD_MASK
+        lower = a_l + b_l
+        lower_carry = lower >> (_B / 2)
+        lower = lower & LOWER_HALF_WORD_MASK
+
+        a_h = a >> HALF_WORD_SIZE
+        b_h = b >> HALF_WORD_SIZE
+        upper = a_h + b_h + lower_carry
+
+        c = upper >> HALF_WORD_SIZE
+        s = (upper & LOWER_HALF_WORD_MASK) << HALF_WORD_SIZE | lower
+        return (Word(c), Word(s))
+
+
 
 class Nat(object):
 
-    nat = []
+    words = []
 
-    def __init__(self, n):
+    def __init__(self, n=0):
         n = int(n)
         num = binary(n)
-        print num
-        self.nat = [Word(x, 2) for x in breakup(num, _B)]
+        self.words = [Word(x, 2) for x in breakup(num, _B)]
+
+    def __len__(self):
+        return len(self.words)
+
+    def __str__(self):
+        return str([str(n) for n in self.words])
+
+    def add(self, x, y):
+        m = len(x)
+        n = len(y)
+
+        if m < n:
+            return self.add(y, x)
+
+        self.words = []
+
+        carry = Word(0)
+        for i in xrange(n):
+            tmp_carry, tmp_sum = x.words[i].add(y.words[i])
+            if carry:
+                tmp_carry, tmp_sum = carry.add(tmp_sum)
+            if carry or tmp_carry:
+                carry = Word(1)
+            self.words.append(tmp_sum)
+
+        for i in xrange(n, m):
+            carry, s = carry.add(x.words[i])
+            self.words.append(s)
+
+        if carry:
+            self.words.append(carry)
+
+        return self
