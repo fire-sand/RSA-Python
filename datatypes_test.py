@@ -1,4 +1,7 @@
+import sys
+
 from datatypes import _B, Word, breakup, Nat
+from random import randint
 
 print "_B size is: {}".format(_B)
 
@@ -20,14 +23,22 @@ print n1
 n1 = Nat(894)
 print n1
 
-
 w1 = Word(0xF)
 w2 = Word(0xF)
 
-print w1.add(w2)
+c, s = w1.add(w2)
+print c, s
 
-z = Nat()
+
+for _ in xrange(1000):
+    z_nat = Nat()
+    x, y = randint(0,10000000), randint(0,10000000)
+    x_nat, y_nat = Nat(x), Nat(y)
+
+    assert z_nat.add(x_nat, y_nat) == Nat(x + y)
+
 x = Nat(100)
-y = Nat(0)
-
-print z.add(x, y)
+y = Nat(100)
+z = Nat(101)
+s = {x, y, z}
+assert len(s) == 2

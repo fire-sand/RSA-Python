@@ -41,6 +41,22 @@ class Word(object):
     def __nonzero__(self):
         return bool(self.word)
 
+    def __eq__(self, other):
+        """Override the default Equals behavior"""
+        if isinstance(other, self.__class__):
+            return self.word == other.word
+        return NotImplemented
+
+    def __ne__(self, other):
+        """Define a non-equality test"""
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        """Override the default hash behavior (that returns the id or the object)"""
+        return hash(self.word)
+
     def add(self, other):
         a = self.word
         b = other.word
@@ -76,6 +92,22 @@ class Nat(object):
     def __str__(self):
         return str([str(n) for n in self.words])
 
+    def __eq__(self, other):
+        """Override the default Equals behavior"""
+        if isinstance(other, self.__class__):
+            return self.words == other.words
+        return NotImplemented
+
+    def __ne__(self, other):
+        """Define a non-equality test"""
+        if isinstance(other, self.__class__):
+            return not self.__eq__(other)
+        return NotImplemented
+
+    def __hash__(self):
+        """Override the default hash behavior (that returns the id or the object)"""
+        return hash(tuple(self.words))
+
     def add(self, x, y):
         m = len(x)
         n = len(y)
@@ -88,10 +120,8 @@ class Nat(object):
         carry = Word(0)
         for i in xrange(n):
             tmp_carry, tmp_sum = x.words[i].add(y.words[i])
-            if carry:
-                tmp_carry, tmp_sum = carry.add(tmp_sum)
-            if carry or tmp_carry:
-                carry = Word(1)
+            carry, tmp_sum = carry.add(tmp_sum)
+            carry = carry or tmp_carry
             self.words.append(tmp_sum)
 
         for i in xrange(n, m):
