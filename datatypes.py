@@ -10,7 +10,7 @@ def size(num):
 
 
 def binary(i):
-    return format(i, '04b')
+    return format(i, '0{}b'.format(WORD_SIZE))
 
 
 def breakup(i, s):

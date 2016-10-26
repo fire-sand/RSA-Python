@@ -3,13 +3,13 @@ import sys
 from datatypes import WORD_SIZE, Word, breakup, Nat
 from random import randint
 
-print "_B size is: {}".format(WORD_SIZE)
+print "WORD_SIZE size is: {}".format(WORD_SIZE)
 
 # Test Word
 
 w1 = Word(0)
 assert w1.word == 0
-assert str(w1) == '0000'
+assert str(w1) == '0' * WORD_SIZE
 assert int(w1) == 0
 assert type(w1) == Word
 
