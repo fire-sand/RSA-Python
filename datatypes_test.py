@@ -1,9 +1,9 @@
 import sys
 
-from datatypes import _B, Word, breakup, Nat
+from datatypes import WORD_SIZE, Word, breakup, Nat
 from random import randint
 
-print "_B size is: {}".format(_B)
+print "_B size is: {}".format(WORD_SIZE)
 
 # Test Word
 

@@ -1,21 +1,24 @@
 # Environment
-_B = 4
-HALF_WORD_SIZE = _B / 2
+WORD_SIZE = 4
+HALF_WORD_SIZE = WORD_SIZE / 2
 LOWER_HALF_WORD_MASK = (1 << HALF_WORD_SIZE) - 1
-UPPER_HALF_WORD_MASK = LOWER_HALF_WORD_MASK << HALF_WORD_SIZE;
+UPPER_HALF_WORD_MASK = LOWER_HALF_WORD_MASK << HALF_WORD_SIZE
+
 
 def size(num):
     return num.bit_length()
 
+
 def binary(i):
     return format(i, '04b')
+
 
 def breakup(i, s):
     for j in xrange(len(i), 0, -s):
         if j < s:
             yield i[:j]
         else:
-            yield i[j-s:j]
+            yield i[j - s:j]
 
 
 class Word(object):
@@ -23,11 +26,11 @@ class Word(object):
     word = None
 
     def __init__(self, w, base=10):
-        w = int(str(w), base) # Make sure w is an int
+        w = int(str(w), base)  # Make sure w is an int
         if w < 0:
             raise Exception("Error: Negative input")
 
-        if size(w) > _B:
+        if size(w) > WORD_SIZE:
             raise Exception("Error: Overflow with w: {}".format(w))
 
         self.word = w
@@ -64,7 +67,7 @@ class Word(object):
         a_l = a & LOWER_HALF_WORD_MASK
         b_l = b & LOWER_HALF_WORD_MASK
         lower = a_l + b_l
-        lower_carry = lower >> (_B / 2)
+        lower_carry = lower >> HALF_WORD_SIZE
         lower = lower & LOWER_HALF_WORD_MASK
 
         a_h = a >> HALF_WORD_SIZE
@@ -76,7 +79,6 @@ class Word(object):
         return (Word(c), Word(s))
 
 
-
 class Nat(object):
 
     words = []
@@ -84,7 +86,7 @@ class Nat(object):
     def __init__(self, n=0):
         n = int(n)
         num = binary(n)
-        self.words = [Word(x, 2) for x in breakup(num, _B)]
+        self.words = [Word(x, 2) for x in breakup(num, WORD_SIZE)]
 
     def __len__(self):
         return len(self.words)
