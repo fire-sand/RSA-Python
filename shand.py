@@ -15,7 +15,7 @@ def mon_pro(A, B, M, n):
     m0 = M & (_B - 1)
     mu = MUS[m0]
     for i in xrange(n):
-        # Get t'th word of bt
+        # Get t'th word of B
         bt = (B >> (i * p)) & (_B - 1)
 
         # Get 0'th word of P
