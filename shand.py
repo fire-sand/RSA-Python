@@ -1,5 +1,7 @@
 import math
 
+from random import choice
+
 p = 2
 _B = 2**p
 
@@ -30,15 +32,22 @@ def mon_pro(A, B, M, n):
 
     return P
 
+rand_max = 1000000
+all_rand = xrange(1, rand_max)
+odd_rand = xrange(1, rand_max, 2)
+for _ in xrange(1000):
+    A = choice(all_rand)
+    B = choice(all_rand)
+    M = choice(odd_rand)
 
-A = 216
-B = 123
-M = 311
+    # A = 216
+    # B = 123
+    # M = 311
 
-nA = int(math.ceil(A.bit_length() / float(p)))
-nB = int(math.ceil(B.bit_length() / float(p)))
-nM = int(math.ceil(M.bit_length() / float(p)))
-n = max(nA, max(nB, nM))
-P = mon_pro(A, B, M, n)
-print P
-print(P * _B**n) % M == (A * B) % M
+    nA = int(math.ceil(A.bit_length() / float(p)))
+    nB = int(math.ceil(B.bit_length() / float(p)))
+    nM = int(math.ceil(M.bit_length() / float(p)))
+    n = max(nA, max(nB, nM))
+    P = mon_pro(A, B, M, n)
+    # print P
+    assert (P * _B**n) % M == (A * B) % M

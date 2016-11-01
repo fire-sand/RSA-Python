@@ -108,6 +108,8 @@ class Word(object):
 
 class Nat(object):
 
+    powers = [2**i for i in xrange(WORD_SIZE + 1)]
+
     def __init__(self, n=0, size=0):
         self.words = []
         if n:
@@ -243,18 +245,19 @@ class Nat(object):
         self.words = ret.words
         return self
 
-    def _mod_inverse(self, x, w):
+    def _mod_inverse(self, x):
         y = [0, 1]
+        w = WORD_SIZE
         for i in xrange(2, w + 1):
-            if pow(2, i - 1) < ((x * y[i - 1]) % pow(2, i)):
-                y.append(y[i - 1] + pow(2, i - 1))
+            if self.powers[i - 1] < ((x * y[i - 1]) % self.powers[i]):
+                y.append(y[i - 1] + self.powers[i - 1])
             else:
                 y.append(y[i - 1])
 
-        return (y[w] ^ (2**w - 1)) + 1
+        return (y[w] ^ (self.powers[w] - 1)) + 1
 
     def mod_exp(self, M, e, n):
-        n_ = Word(self._mod_inverse(n, WORD_SIZE))
+        n_ = Word(self._mod_inverse(n))
         n_nat = Nat(n)
 
         # These 3 lines are still kind of hard
