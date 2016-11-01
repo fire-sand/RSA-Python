@@ -5,30 +5,6 @@ from random import randint
 
 print "WORD_SIZE size is: {}".format(WORD_SIZE)
 
-# Test Word
-
-w1 = Word(0)
-assert w1.word == 0
-assert str(w1) == '0' * WORD_SIZE
-assert int(w1) == 0
-assert type(w1) == Word
-
-# print list(breakup('1234567890', 4))
-
-# Test Nat
-
-n1 = Nat(0)
-print n1
-
-n1 = Nat(894)
-print n1
-
-w1 = Word(0xF)
-w2 = Word(0xF)
-
-c, s = w1.add(w2)
-print c, s
-
 
 for _ in xrange(1000):
     z_nat = Nat()
@@ -47,19 +23,9 @@ s = {x, y, z}
 assert len(s) == 2
 
 
-x = Word(0xF)
-y = Word(0xF)
-
-print[str(w) for w in x.mul(y)]
-
-
-
-
-
 def mod_inverse(x, w):
     y = [0, 1]
     for i in xrange(2, w + 1):
-        print i, pow(2, i), y[i-1], x * y[i-1], x * y[i-1] % pow(2, i), pow(2, i-1)
         if pow(2, i - 1) < ((x * y[i - 1]) % pow(2, i)):
             y.append(y[i - 1] + pow(2, i - 1))
         else:
@@ -114,19 +80,18 @@ def mon_pro(a, b, n_prime, n, r):
     return u - n if u >= n else u
 
 
-r = 2**(2*WORD_SIZE)
 # r_inv = 169
-n = 311
-a = 216
-b = 123
+n = 513
+a = 199
+b = 300
+n_nat = Nat(n)
+r = 2**(len(n_nat)*WORD_SIZE)
 
-r_inv, n_inv = extended_gcd(r, n)
-# print r_inv, n_inv
+# r_inv, n_inv = extended_gcd(r, n)
+# print 'here', r_inv, n_inv
 _, r_inv, n_inv = egcd(r, n)
 n_inv = ((r * r_inv) - 1) / n
-# print r_inv, n_inv
 
-# n_inv = -n_inv
 print 'n_inv', n_inv
 n_0 = n_inv % 2**WORD_SIZE # mod_inverse(n, WORD_SIZE)
 
@@ -134,15 +99,13 @@ print mod_inverse(n, WORD_SIZE)
 
 print 'n_0', n_0
 
-n_nat = Nat(n)
 n_0_nat = Word(n_0)
+assert int(n_0_nat) == n_0
 a_nat = Nat(a, size=len(n_nat))
 b_nat = Nat(b, size=len(n_nat))
 
-# print len(a_nat), len(b_nat), len(n_nat)
-print a_nat, b_nat, n_nat
 
 print 'expected:', mon_pro(a, b, n_inv, n, r)
-# print 'should be:', (a * b * r_inv) % n
+print 'should be:', (a * b * r_inv) % n
 print 'actual:', int(z._mon_pro(a_nat, b_nat, n_0_nat, n_nat))
 print 'actual:', z._mon_pro(a_nat, b_nat, n_0_nat, n_nat)

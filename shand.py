@@ -40,4 +40,5 @@ nB = int(math.ceil(B.bit_length() / float(p)))
 nM = int(math.ceil(M.bit_length() / float(p)))
 n = max(nA, max(nB, nM))
 P = mon_pro(A, B, M, n)
+print P
 print(P * _B**n) % M == (A * B) % M

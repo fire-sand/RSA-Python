@@ -42,6 +42,8 @@ def extended_gcd(a, b):
 
     return old_s, old_t
 
+# print extended_gcd(16, 13)
+
 # TODO: tests
 #
 # r_inv, n_prime = extended_gcd(3, 26)
@@ -56,7 +58,7 @@ def extended_gcd(a, b):
 # print ""
 
 
-def mon_pro(a, b):
+def mon_pro(a, b, n_prime, n, r_):
     t = a * b
     m = (t * n_prime) & r_
     u = (t + m * n) >> 2048
@@ -80,10 +82,10 @@ def mod_exp(a, e, n):
     x_bar = r % n
 
     for bit in bin(e)[2:]:
-        x_bar = mon_pro(x_bar, x_bar)
+        x_bar = mon_pro(x_bar, x_bar, n_prime, n, r_)
         if bit == '1':
-            x_bar = mon_pro(a_bar, x_bar)
-    return mon_pro(x_bar, 1)
+            x_bar = mon_pro(a_bar, x_bar, n_prime, n, r_)
+    return mon_pro(x_bar, 1, n_prime, n, r_)
 
 
 def pow_mod(a, b, c):
@@ -116,7 +118,7 @@ def verify(m, s, pow_func=pow):
 def main():
     m = "hello world"
 
-    N = 100
+    N = 50
 
     # Exponentiation with Python built in pow function
     t = time.time()

@@ -1,5 +1,5 @@
 # Environment
-WORD_SIZE = 4
+WORD_SIZE = 2
 HALF_WORD_SIZE = WORD_SIZE / 2
 LOWER_HALF_WORD_MASK = (1 << HALF_WORD_SIZE) - 1
 UPPER_HALF_WORD_MASK = LOWER_HALF_WORD_MASK << HALF_WORD_SIZE
@@ -110,9 +110,8 @@ class Word(object):
 
 class Nat(object):
 
-    words = []
-
     def __init__(self, n=0, size=0):
+        self.words = []
         if n:
             n = int(n)
             num = binary(n)
@@ -182,73 +181,48 @@ class Nat(object):
 
         t = Nat(size=(2 * S + 1))
         for i in xrange(S):
-            # c = Word(0)
-            c = 0
+            c = Word(0)
             for j in xrange(S):
+                # Broke up this addition to handle separate carries
+                c1, s = a.words[j].mul(b.words[i])
+                c2, s = t.words[i + j].add(s)
+                c3, s = s.add(c)
 
-                s = int(t.words[i+j]) + int(a.words[j])*int(b.words[i]) + c
-                c = s >> WORD_SIZE
-                s = s & (2**WORD_SIZE - 1)
+                t.words[i + j] = s
 
-                # # Broke up this addition to handle separate carries
-                # c1, s = a.words[j].mul(b.words[i])
-                # c2, s = t.words[i + j].add(s)
-                # c3, s = s.add(c)
+                # Handle the carries
+                _, c = c1.add(c2)
+                _, c = c.add(c3)
 
-                t.words[i + j] = Word(s)
+            t.words[i + S] = c
 
-                # # Handle the carries
-                # _, c = c1.add(c2)
-                # _, c = c.add(c3)
-
-            t.words[i + S] = Word(c)
-
-        # print 't:', int(t), t
-
-        # m = Nat(size=(len(a) + len(b)))
         for i in xrange(S):
-            # c = Word(0)
-            c = 0
-            # _, m = t.words[i].mul(n_0)  # mod 2^w is the same as ignoring carry
-            m = (int(t.words[i]) * int(n_0)) % 2**WORD_SIZE
+            c = Word(0)
+            _, m = t.words[i].mul(n_0)  # mod 2^w is the same as ignoring carry
             for j in xrange(S):
-                s = int(t.words[i+j]) + m*int(n.words[j]) + c
-                c = s >> WORD_SIZE
-                s = s & (2**WORD_SIZE - 1)
 
-                # # Broke up this addition to handle separate carries
-                # c1, s = m.mul(n.words[j])
-                # c2, s = t.words[i + j].add(s)
-                # c3, s = s.add(c)
+                # Broke up this addition to handle separate carries
+                c1, s = m.mul(n.words[j])
+                c2, s = t.words[i + j].add(s)
+                c3, s = s.add(c)
 
-                t.words[i + j] = Word(s)
+                t.words[i + j] = s
 
-                # # Handle the carries
-                # _, c = c1.add(c2)
-                # _, c = c.add(c3)
-
-                # print 'inner t', int(t), t
+                # Handle the carries
+                _, c = c1.add(c2)
+                _, c = c.add(c3)
 
             for j in xrange(i + S, 2 * S):
-                s = int(t.words[j]) + c
-                c = s >> WORD_SIZE
-                s = s & (2**WORD_SIZE - 1)
+                c, s = t.words[j].add(c)
+                t.words[j] = s
 
-                # c, s = t.words[j].add(c)
-                t.words[j] = Word(s)
-
-                # print 'inner t', int(t), t
-
-
-        t.words[2 * S] = Word(c)
-        # print 'final t:', int(t)
+        t.words[2 * S] = c
 
         u = Nat(size=(S + 1))
         for j in xrange(S + 1):
-            u.words[j] = t.words[j + S]
+            u.words[j] = Word(int(t.words[j + S]))
 
-        # u_int = int(t) >> (WORD_SIZE * S)
-
+        # Didn't implement comparison/subtraction yet
         u_int = int(u)
         n_int = int(n)
         if u_int >= n_int:
