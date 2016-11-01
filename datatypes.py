@@ -173,18 +173,25 @@ class Nat(object):
 
         return self
 
+    def rsh(self, n):
+        for _ in xrange(min(n, len(self))):
+            self.words.pop(0)
+
+        return self
+
     def _pad_words(self, n):
         for _ in xrange(len(self.words), n):
-                self.words.append(Word(0))
+            self.words.append(Word(0))
 
     def _mon_pro(self, a, b, n_0, n):
-        # self.words = []
+        self.words = []
 
         s = len(n)
         a._pad_words(s)
         b._pad_words(s)
 
-        t = Nat(size=(2 * s + 1))
+        self._pad_words(2*s + 1)
+        t = self
         for i in xrange(s):
             C = Word(0)
             for j in xrange(s):
@@ -223,17 +230,18 @@ class Nat(object):
 
         t.words[2 * s] = C
 
-        u = Nat(size=(s + 1))
-        for j in xrange(s + 1):
-            u.words[j] = Word(int(t.words[j + s]))
+        u = t.rsh(s)
 
         # Didn't implement comparison/subtraction yet
         u_int = int(u)
         n_int = int(n)
         if u_int >= n_int:
-            return Nat(u_int - n_int)
+            ret = Nat(u_int - n_int)
         else:
-            return Nat(u_int)
+            ret = Nat(u_int)
+
+        self.words = ret.words
+        return self
 
     def _mod_inverse(self, x, w):
         y = [0, 1]
@@ -253,8 +261,10 @@ class Nat(object):
         r = 2**(len(n_nat) * WORD_SIZE)
         M_bar = Nat((M * r) % n)
         x_bar = Nat(r % n)
+
         for ei in bin(e)[2:]:
-            x_bar = self._mon_pro(x_bar, x_bar, n_, n_nat)
+            x_bar = Nat()._mon_pro(x_bar, x_bar, n_, n_nat)
             if ei == '1':
-                x_bar = self._mon_pro(M_bar, x_bar, n_, n_nat)
+                x_bar = Nat()._mon_pro(M_bar, x_bar, n_, n_nat)
+
         return self._mon_pro(x_bar, Nat(1), n_, n_nat)
