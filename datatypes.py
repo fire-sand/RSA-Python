@@ -1,5 +1,5 @@
 # Environment
-WORD_SIZE = 2
+WORD_SIZE = 8
 HALF_WORD_SIZE = WORD_SIZE / 2
 LOWER_HALF_WORD_MASK = (1 << HALF_WORD_SIZE) - 1
 UPPER_HALF_WORD_MASK = LOWER_HALF_WORD_MASK << HALF_WORD_SIZE
@@ -22,8 +22,6 @@ def breakup(i, s):
 
 
 class Word(object):
-
-    word = None
 
     def __init__(self, w, base=10):
         w = int(str(w), base)  # Make sure w is an int
@@ -116,6 +114,7 @@ class Nat(object):
             n = int(n)
             num = binary(n)
             self.words = [Word(x, 2) for x in breakup(num, WORD_SIZE)]
+
         if size or size > len(self.words):
             for _ in xrange(len(self.words), size):
                 self.words.append(Word(0))
@@ -174,53 +173,59 @@ class Nat(object):
 
         return self
 
+    def _pad_words(self, n):
+        for _ in xrange(len(self.words), n):
+                self.words.append(Word(0))
+
     def _mon_pro(self, a, b, n_0, n):
-        self.words = []
+        # self.words = []
 
-        S = len(n)
+        s = len(n)
+        a._pad_words(s)
+        b._pad_words(s)
 
-        t = Nat(size=(2 * S + 1))
-        for i in xrange(S):
-            c = Word(0)
-            for j in xrange(S):
+        t = Nat(size=(2 * s + 1))
+        for i in xrange(s):
+            C = Word(0)
+            for j in xrange(s):
                 # Broke up this addition to handle separate carries
-                c1, s = a.words[j].mul(b.words[i])
-                c2, s = t.words[i + j].add(s)
-                c3, s = s.add(c)
+                C1, S = a.words[j].mul(b.words[i])
+                C2, S = t.words[i + j].add(S)
+                C3, S = S.add(C)
 
-                t.words[i + j] = s
+                t.words[i + j] = S
 
                 # Handle the carries
-                _, c = c1.add(c2)
-                _, c = c.add(c3)
+                _, C = C1.add(C2)
+                _, C = C.add(C3)
 
-            t.words[i + S] = c
+            t.words[i + s] = C
 
-        for i in xrange(S):
-            c = Word(0)
+        for i in xrange(s):
+            C = Word(0)
             _, m = t.words[i].mul(n_0)  # mod 2^w is the same as ignoring carry
-            for j in xrange(S):
+            for j in xrange(s):
 
                 # Broke up this addition to handle separate carries
-                c1, s = m.mul(n.words[j])
-                c2, s = t.words[i + j].add(s)
-                c3, s = s.add(c)
+                C1, S = m.mul(n.words[j])
+                C2, S = t.words[i + j].add(S)
+                C3, S = S.add(C)
 
-                t.words[i + j] = s
+                t.words[i + j] = S
 
                 # Handle the carries
-                _, c = c1.add(c2)
-                _, c = c.add(c3)
+                _, C = C1.add(C2)
+                _, C = C.add(C3)
 
-            for j in xrange(i + S, 2 * S):
-                c, s = t.words[j].add(c)
-                t.words[j] = s
+            for j in xrange(i + s, 2 * s):
+                C, S = t.words[j].add(C)
+                t.words[j] = S
 
-        t.words[2 * S] = c
+        t.words[2 * s] = C
 
-        u = Nat(size=(S + 1))
-        for j in xrange(S + 1):
-            u.words[j] = Word(int(t.words[j + S]))
+        u = Nat(size=(s + 1))
+        for j in xrange(s + 1):
+            u.words[j] = Word(int(t.words[j + s]))
 
         # Didn't implement comparison/subtraction yet
         u_int = int(u)
@@ -230,12 +235,26 @@ class Nat(object):
         else:
             return Nat(u_int)
 
+    def _mod_inverse(self, x, w):
+        y = [0, 1]
+        for i in xrange(2, w + 1):
+            if pow(2, i - 1) < ((x * y[i - 1]) % pow(2, i)):
+                y.append(y[i - 1] + pow(2, i - 1))
+            else:
+                y.append(y[i - 1])
+
+        return (y[w] ^ (2**w - 1)) + 1
+
     def mod_exp(self, M, e, n):
-        n_ = (1 / float(n)) % r
-        M_bar = (M * r) % n
-        x_bar = r % n
-        for bit in bin(e)[2:]:
-            x_bar = self._mon_pro(x_bar, x_bar, n_, r)
-            if bit == '1':
-                x_bar = self._mon_pro(M_bar, x_bar, n_, r)
-        return self._mon_pro(x_bar, Nat(1), n_, r)
+        n_ = Word(self._mod_inverse(n, WORD_SIZE))
+        n_nat = Nat(n)
+
+        # These 3 lines are still kind of hard
+        r = 2**(len(n_nat) * WORD_SIZE)
+        M_bar = Nat((M * r) % n)
+        x_bar = Nat(r % n)
+        for ei in bin(e)[2:]:
+            x_bar = self._mon_pro(x_bar, x_bar, n_, n_nat)
+            if ei == '1':
+                x_bar = self._mon_pro(M_bar, x_bar, n_, n_nat)
+        return self._mon_pro(x_bar, Nat(1), n_, n_nat)

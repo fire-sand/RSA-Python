@@ -31,7 +31,7 @@ def mod_inverse(x, w):
         else:
             y.append(y[i-1])
 
-    return y[w]
+    return (y[w] ^ (2**w - 1)) + 1
 
 def extended_gcd(a, b):
     """Returns x,y such that a*x + b*y = gcd(a,b).
@@ -81,7 +81,7 @@ def mon_pro(a, b, n_prime, n, r):
 
 
 # r_inv = 169
-n = 513
+n = 589
 a = 199
 b = 300
 n_nat = Nat(n)
@@ -95,9 +95,8 @@ n_inv = ((r * r_inv) - 1) / n
 print 'n_inv', n_inv
 n_0 = n_inv % 2**WORD_SIZE # mod_inverse(n, WORD_SIZE)
 
-print mod_inverse(n, WORD_SIZE)
-
-print 'n_0', n_0
+n_0 = mod_inverse(n, WORD_SIZE)
+print n_0
 
 n_0_nat = Word(n_0)
 assert int(n_0_nat) == n_0
@@ -109,3 +108,6 @@ print 'expected:', mon_pro(a, b, n_inv, n, r)
 print 'should be:', (a * b * r_inv) % n
 print 'actual:', int(z._mon_pro(a_nat, b_nat, n_0_nat, n_nat))
 print 'actual:', z._mon_pro(a_nat, b_nat, n_0_nat, n_nat)
+
+print 'mod_exp:', int(z.mod_exp(a, b, n))
+print 'mod_exp:', z.mod_exp(a, b, n)
