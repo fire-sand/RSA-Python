@@ -264,10 +264,15 @@ class Nat(object):
         r = 2**(len(n_nat) * WORD_SIZE)
         M_bar = Nat((M * r) % n)
         x_bar = Nat(r % n)
+        print "M_bar: ", int(M_bar)
+        print "x_bar: ", int(x_bar)
+
 
         for ei in bin(e)[2:]:
+            print int(x_bar), " * ", int(x_bar), " mod ",(int(n_nat));
             x_bar = Nat()._mon_pro(x_bar, x_bar, n_, n_nat)
+            print "x_bar * x_bar mod n_nat =", int(x_bar)
             if ei == '1':
                 x_bar = Nat()._mon_pro(M_bar, x_bar, n_, n_nat)
-
+                print "Mbar * x_bar =", int(x_bar)
         return self._mon_pro(x_bar, Nat(1), n_, n_nat)

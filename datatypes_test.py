@@ -109,5 +109,9 @@ print 'should be:', (a * b * r_inv) % n
 print 'actual:', int(z._mon_pro(a_nat, b_nat, n_0_nat, n_nat))
 print 'actual:', z._mon_pro(a_nat, b_nat, n_0_nat, n_nat)
 
+print "a: ", a
+print "b: ", b
+print "n: ", n
 print 'mod_exp:', int(z.mod_exp(a, b, n))
+print "expected python: ", pow(a,b,n);
 print 'mod_exp:', z.mod_exp(a, b, n)
