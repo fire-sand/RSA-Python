@@ -2,12 +2,14 @@ import math
 
 from random import choice
 
+# p = word size
 p = 2
 _B = 2**p
 
 # M is not allowed to be even
 # Hardcoded for _B = 4
-MUS = [None, 3, None, 1]
+MUS = [None, 3, None, 1] # p = 2
+# MUS = [None, 1]  # p = 1
 
 
 def mon_pro(A, B, M, n):
