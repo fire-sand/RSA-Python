@@ -47,6 +47,7 @@ def mon_exp(M, e, n):
     print "x_bar: ", int(x_bar)
 
     for ei in bin(e)[2:]:
+        print ei
         print int(x_bar), " * ", int(x_bar), " mod ",(int(n));
         x_bar = mon_pro(x_bar, x_bar, n, 10)
         print "x_bar * x_bar mod n_nat =", int(x_bar)
@@ -54,6 +55,7 @@ def mon_exp(M, e, n):
             print int(M_bar), " * ", int(x_bar), " mod ",(int(n));
             x_bar = mon_pro(M_bar, x_bar, n, 10)
             print "Mbar * x_bar =", int(x_bar)
+
 
     return mon_pro(x_bar, 1, n, 10)
 
