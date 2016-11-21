@@ -1,4 +1,5 @@
 import sys
+import time
 
 from datatypes import WORD_SIZE, Word, breakup, Nat
 from random import randint
@@ -114,4 +115,6 @@ print "b: ", b
 print "n: ", n
 print 'mod_exp:', int(z.mod_exp(a, b, n))
 print "expected python: ", pow(a,b,n);
+t0 = time.time()
 print 'mod_exp:', z.mod_exp(a, b, n)
+print time.time() - t0
