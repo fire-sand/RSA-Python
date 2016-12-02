@@ -273,6 +273,7 @@ class Nat(object):
             x_bar = Nat()._mon_pro(x_bar, x_bar, n_, n_nat)
             print "x_bar * x_bar mod n_nat =", int(x_bar)
             if ei == '1':
+                print int(M_bar), " * ", int(x_bar), " mod ",(int(n_nat));
                 x_bar = Nat()._mon_pro(M_bar, x_bar, n_, n_nat)
                 print "Mbar * x_bar =", int(x_bar)
         return self._mon_pro(x_bar, Nat(1), n_, n_nat)

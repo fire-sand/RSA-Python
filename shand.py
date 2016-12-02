@@ -4,7 +4,6 @@ import time
 
 from random import choice
 
-
 p = 1
 _B = 2**p
 
@@ -32,12 +31,16 @@ def mon_pro(A, B, M, n):
 
         # Calculate new value of P
         # divide by _B is the same as shift right by p
+        # print "big: ", A
+        # print "small; ", bt
+        # print "big: ", M
+        # print "small: ", qt
         P = (A * bt + P + qt * M) >> p
+        # print P
 
         print P
 
     return P
-
 
 def mod_exp(M, e, n, length):
     # n_ = Word(self._mod_inverse(n))
@@ -79,7 +82,6 @@ def mod_exp(M, e, n, length):
 # print n, P
 # assert (P * _B**n) % M == (A * B) % M
 
-
 A = 199
 B = 300
 M = 589
@@ -87,10 +89,14 @@ nA = int(math.ceil(A.bit_length() / float(p)))
 nB = int(math.ceil(B.bit_length() / float(p)))
 nM = int(math.ceil(M.bit_length() / float(p)))
 n = max(nA, max(nB, nM))
-P = mon_pro(A, B, M, n)
-print P
-assert (P * _B**n) % M == (A * B) % M
+print n
+# P = mon_pro(A, B, M, n)
+# print P
 
+print "----- Mon exp ------"
+print mon_exp(A, B, M); # a ^ b mod n
+print "^^ should be" , pow(A, B, M);
+assert (P * _B**n) % M == (A * B) % M
 
 # SEND TO FPGA
 
@@ -114,19 +120,15 @@ def dump(n):
     # s = '0' + s
     return s.decode('hex')
 
-m = 199
-e = 300
-n = 589
-
-dn = dump(n)
-# print bin(n)
-# print '%0256x' % n
+# dn = dump(M)
+# print bin(M)
+# print '%0256x' % M
 # print repr(dn)
 # print len(dn)
 
-ser.write(dump(m))
-ser.write(dump(e))
-ser.write(dump(n))
+ser.write(dump(A))
+ser.write(dump(B))
+ser.write(dump(M))
 
 val = None
 while True:
@@ -135,6 +137,3 @@ while True:
         print val
 
 ser.close()
-
-
-# print mod_exp(A, B, M, n)
