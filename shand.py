@@ -92,11 +92,11 @@ n = max(nA, max(nB, nM))
 print n
 # P = mon_pro(A, B, M, n)
 # print P
+# assert (P * _B**n) % M == (A * B) % M
 
 print "----- Mon exp ------"
-print mon_exp(A, B, M); # a ^ b mod n
+print mod_exp(A, B, M, n); # a ^ b mod n
 print "^^ should be" , pow(A, B, M);
-assert (P * _B**n) % M == (A * B) % M
 
 # SEND TO FPGA
 
