@@ -115,7 +115,7 @@ ser.isOpen()
 time.sleep(2)
 
 
-def dump(n, bit_length=256):
+def dump(n, bit_length=16):
     s = format(n, '0{}x'.format(bit_length / 4))
     # s = format'%032x' % n
     # if len(s) & 1:
@@ -140,11 +140,10 @@ X_bar = r % M
 # parameter RX_E = 4;
 # parameter RX_N = 5;
 
-e_arr = bin(B)[2:]
-print e_arr
-print len(e_arr)
-ser.write(dump(n, bit_length=8)) # TODO uncomment me to send the length
-ser.write(dump(len(e_arr), bit_length=8)) # TODO uncomment me to send the length
+ser.write(dump(n, bit_length=8))
+print n
+ser.write(dump(B.bit_length()-1, bit_length=8))
+print B.bit_length() - 1
 ser.write(dump(X_bar))
 print X_bar
 ser.write(dump(M_bar))
