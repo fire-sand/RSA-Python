@@ -1,6 +1,7 @@
 import math
 import serial
 import time
+import binascii
 
 from random import choice
 
@@ -95,18 +96,18 @@ print n
 # assert (P * _B**n) % M == (A * B) % M
 
 print "----- Mon exp ------"
-print mod_exp(A, B, M, n); # a ^ b mod n
+print mod_exp(A, B, M, n); # a ^ b mod M
 print "^^ should be" , pow(A, B, M);
 
 # SEND TO FPGA
 
 ser = serial.Serial(
-    port='/dev/cu.usbmodem1411',
+    port='/dev/ttyUSB1',
     baudrate=9600,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
     bytesize=serial.EIGHTBITS,
-    timeout=0
+    timeout=None
 )
 
 ser.isOpen()
@@ -115,7 +116,7 @@ time.sleep(2)
 
 
 def dump(n):
-    s = '%064x' % n
+    s = '%032x' % n
     # if len(s) & 1:
     # s = '0' + s
     return s.decode('hex')
@@ -126,14 +127,37 @@ def dump(n):
 # print repr(dn)
 # print len(dn)
 
-ser.write(dump(A))
-ser.write(dump(B))
-ser.write(dump(M))
+# Need to change to M_bar and X_bar
+r = 2**(n * p)
+M_bar = (A * r) % M
+X_bar = r % M
 
+# parameter RX_MP_COUNT = 0;
+# parameter RX_E_IDX = 1;
+# parameter RX_XBAR = 2;
+# parameter RX_MBAR = 3;
+# parameter RX_E = 4;
+# parameter RX_N = 5;
+
+
+e_arr = bin(B)[2:]
+print e_arr
+print len(e_arr)
+ser.write(chr(n)) # TODO uncomment me to send the length
+ser.write(chr(len(e_arr))) # TODO uncomment me to send the length
+ser.write(dump(X_bar))
+print X_bar
+ser.write(dump(M_bar))
+print binascii.hexlify(dump(M_bar)), len(binascii.hexlify(dump(M_bar)))
+print M_bar
+ser.write(dump(B))
+print B
+ser.write(dump(M))
+print M
 val = None
 while True:
-    val = ser.readline()
+    val = ser.read(size=4)
     if val:
-        print val
+        print binascii.hexlify(val)
 
 ser.close()
