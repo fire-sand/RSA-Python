@@ -115,8 +115,9 @@ ser.isOpen()
 time.sleep(2)
 
 
-def dump(n):
-    s = '%032x' % n
+def dump(n, bit_length=256):
+    s = format(n, '0{}x'.format(bit_length / 4))
+    # s = format'%032x' % n
     # if len(s) & 1:
     # s = '0' + s
     return s.decode('hex')
@@ -139,12 +140,11 @@ X_bar = r % M
 # parameter RX_E = 4;
 # parameter RX_N = 5;
 
-
 e_arr = bin(B)[2:]
 print e_arr
 print len(e_arr)
-ser.write(chr(n)) # TODO uncomment me to send the length
-ser.write(chr(len(e_arr))) # TODO uncomment me to send the length
+ser.write(dump(n, bit_length=8)) # TODO uncomment me to send the length
+ser.write(dump(len(e_arr), bit_length=8)) # TODO uncomment me to send the length
 ser.write(dump(X_bar))
 print X_bar
 ser.write(dump(M_bar))
