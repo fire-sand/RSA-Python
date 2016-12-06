@@ -141,21 +141,20 @@ X_bar = r % M
 # parameter RX_N = 5;
 
 ser.write(dump(n, bit_length=8))
-print n
+print repr(dump(n, bit_length=8))
 ser.write(dump(B.bit_length()-1, bit_length=8))
-print B.bit_length() - 1
+print repr(dump(B.bit_length() - 1, bit_length=8))
 ser.write(dump(X_bar))
-print X_bar
+print repr(dump(X_bar))
 ser.write(dump(M_bar))
-print binascii.hexlify(dump(M_bar)), len(binascii.hexlify(dump(M_bar)))
-print M_bar
+print repr(dump(M_bar))
 ser.write(dump(B))
-print B
+print repr(dump(B))
 ser.write(dump(M))
-print M
+print repr(dump(M))
 val = None
 while True:
-    val = ser.read(size=4)
+    val = ser.read(size=2)
     if val:
         print binascii.hexlify(val)
 
