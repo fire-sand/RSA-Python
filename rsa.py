@@ -71,7 +71,7 @@ def decrypt(C):
 def main():
     message = sys.argv[1][:BIT_LENGTH / 8]
 
-    print 'Encrypting: %s...' % (message)
+    print 'Encrypting: "%s"...' % (message)
     ciphertext = encrypt(message)
     print 'Ciphertext:', ciphertext
 
