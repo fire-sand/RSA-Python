@@ -23,12 +23,12 @@ MESSAGE = 'HELLO WORLD!'
 BIT_LENGTH = 256
 
 ser = serial.Serial(
-    port='/dev/tty.usbserial-141B',
+    port='/dev/ttyUSB1',
     baudrate=9600,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
     bytesize=serial.EIGHTBITS,
-    timeout=0
+    timeout=None
 )
 
 ser.isOpen()
@@ -65,9 +65,7 @@ def mon_pro(A, B, M, n):
 
 
 def encrypt(M):
-
-    hex_M = binascii.hexlify(M)
-    M = int(hex_M, 16)
+    M = int(binascii.hexlify(M),16)
 
     # These 3 lines are still kind of hard
     r = 2**(255 * p)
@@ -82,27 +80,27 @@ def encrypt(M):
         return s.decode('hex')
 
     ser.write(dump(n, bit_length=8)) # TODO uncomment me to send the length
-    print dump(n, bit_length=8)
+    print repr(dump(n, bit_length=8))
     ser.write(dump(E.bit_length() - 1, bit_length=8)) # TODO uncomment me to send the length
-    print dump(E.bit_length() - 1, bit_length=8)
-    ser.write(dump(X_bar))
-    print dump(X_bar)  # 435, 0x01b3
+    print repr(dump(E.bit_length() - 1, bit_length=8))
+    ser.write(dump(x_bar))
+    print repr(dump(x_bar))  # 435, 0x01b3
     ser.write(dump(M_bar))
-    print dump(M_bar)  # 571, 0x023b
-    ser.write(dump(B))
-    print dump(B)  # 300, 0x012c
-    ser.write(dump(M))
-    print dump(M)  # 589, 0x024d
+    print repr(dump(M_bar))  # 571, 0x023b
+    ser.write(dump(E))
+    print repr(dump(E))  # 300, 0x012c
+    ser.write(dump(N))
+    print repr(dump(N))  # 589, 0x024d
     val = None
-    val = ser.read(size=BIT_LENGTH)
+    val = ser.read(size=BIT_LENGTH/8)
     if val:
         print binascii.hexlify(val)
 
-encrypt(M)
+encrypt(MESSAGE)
 
-hex_M = binascii.hexlify(M)
+hex_M = binascii.hexlify(MESSAGE)
 M = int(hex_M, 16)
-print '^^^ should be ^^^', pow(M, E, N)
+print '^^^ should be ^^^', hex(pow(M, E, N))
 
 # A = 199
 # B = 300
