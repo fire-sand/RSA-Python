@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import binascii
 import math
 import serial
@@ -71,12 +73,12 @@ def decrypt(C):
 def main():
     message = sys.argv[1][:BIT_LENGTH / 8]
 
-    print 'Encrypting: "%s"...' % (message)
+    print '\nEncrypting: "%s"...' % (message)
     ciphertext = encrypt(message)
     print 'Ciphertext:', ciphertext
 
     plaintext = decrypt(ciphertext)
-    print 'Recovered plaintext:', plaintext
+    print 'Recovered plaintext:', plaintext, '\n'
 
 
 if __name__ == '__main__':
