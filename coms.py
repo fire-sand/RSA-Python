@@ -19,9 +19,11 @@ n = 255
 # MUS = [None, 3, None, 1]
 MUS = [None, 1]
 
-MESSAGE = sys.argv[1]
 
 BIT_LENGTH = 256
+
+
+MESSAGE = sys.argv[1][:BIT_LENGTH / 8]
 
 ser = serial.Serial(
     port='/dev/ttyUSB1',
