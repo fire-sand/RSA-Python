@@ -4,21 +4,18 @@ import serial
 import sys
 import time
 
-from random import choice
-
-p = 1
-_B = 2**p
-
+# RSA Modulus
 N = 0x77b3ce7f6114022ec5affbe9073510714681b8ea710c126ecdff65057a35b1db
+
+# Encryption Key
 E = 0x10001
+
+# Decryption Key
 D = 0x39200a3027f8108299bd3e8f1aed6c06bbbb26977b689af6810777fc10b05da1
-n = 255
 
-
+# RSA bit length for FPGA
 BIT_LENGTH = 256
 
-
-MESSAGE = sys.argv[1][:BIT_LENGTH / 8]
 
 ser = serial.Serial(
     port='/dev/ttyUSB1',
@@ -29,9 +26,7 @@ ser = serial.Serial(
     timeout=None
 )
 
-print ser.isOpen()
-
-# time.sleep(2)
+assert ser.isOpen()
 
 
 def mod_exp(M, exponent):
@@ -39,6 +34,8 @@ def mod_exp(M, exponent):
     Calculates M^exponent mod N
     where M is an integer.
     """
+
+    n = max(M.bit_length(), max(exponent.bit_length(), N.bit_length()))
 
     # Convert to Montgomery space
     r = 2**(255 * p)
@@ -70,6 +67,19 @@ def encrypt(M):
 def decrypt(C):
     return mod_exp(int(binascii.hexlify(C), 16), D)
 
-CIPHER = encrypt(MESSAGE)
-print 'encrypted:', CIPHER
-print 'decrypted:', decrypt(CIPHER)
+
+def main():
+    message = sys.argv[1][:BIT_LENGTH / 8]
+
+    print 'Encrypting: %s with \nRSA Encryption Key: (%d, %d)...' % (message, E, N)
+    CIPHER = encrypt()
+    print 'Ciphertext:', CIPHER
+
+    time.sleep(1)
+
+    print 'Decrypting: %s with \nRSA Decryption Key: (%d, %d)...' % (message, D, N)
+    print 'Recovered plaintext:', decrypt(CIPHER)
+
+
+if __name__ == '__main__':
+    main()
