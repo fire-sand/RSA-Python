@@ -38,7 +38,7 @@ def mod_exp(M, exponent):
     n = max(M.bit_length(), max(exponent.bit_length(), N.bit_length()))
 
     # Convert to Montgomery space
-    r = 2**(255)
+    r = 2**n
     M_bar = (M * r) % N
     x_bar = r % N
 
