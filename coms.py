@@ -1,7 +1,8 @@
+import binascii
 import math
 import serial
+import sys
 import time
-import binascii
 
 from random import choice
 
@@ -18,7 +19,7 @@ n = 255
 # MUS = [None, 3, None, 1]
 MUS = [None, 1]
 
-MESSAGE = 'HELLO WORLD!'
+MESSAGE = sys.argv[1]
 
 BIT_LENGTH = 256
 
@@ -79,9 +80,10 @@ def mod_exp(M, exponent):
         s = format(n, '0{}x'.format(bit_length / 4))
         return s.decode('hex')
 
-    ser.write(dump(n, bit_length=8)) # TODO uncomment me to send the length
+    ser.write(dump(n, bit_length=8))  # TODO uncomment me to send the length
     # print repr(dump(n, bit_length=8))
-    ser.write(dump(exponent.bit_length() - 1, bit_length=8)) # TODO uncomment me to send the length
+    # TODO uncomment me to send the length
+    ser.write(dump(exponent.bit_length() - 1, bit_length=8))
     # print repr(dump(exponent.bit_length() - 1, bit_length=8))
     ser.write(dump(x_bar))
     # print repr(dump(x_bar))  # 435, 0x01b3
@@ -92,7 +94,7 @@ def mod_exp(M, exponent):
     ser.write(dump(N))
     # print repr(dump(N))  # 589, 0x024d
     val = None
-    val = ser.read(size=BIT_LENGTH/8)
+    val = ser.read(size=BIT_LENGTH / 8)
     if val:
         return binascii.hexlify(val).decode('hex')
 
@@ -100,10 +102,11 @@ def mod_exp(M, exponent):
 
 
 def encrypt(M):
-    return mod_exp(int(binascii.hexlify(M),16), E)
+    return mod_exp(int(binascii.hexlify(M), 16), E)
+
 
 def decrypt(C):
-    return mod_exp(int(binascii.hexlify(C),16), D)
+    return mod_exp(int(binascii.hexlify(C), 16), D)
 
 CIPHER = encrypt(MESSAGE)
 print 'encrypted:', CIPHER
