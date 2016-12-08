@@ -72,25 +72,25 @@ def mod_exp(M, exponent):
     M_bar = (M * r) % N
     x_bar = r % N
 
-    print "M_bar: ", M_bar
-    print "x_bar: ", x_bar
+    # print "M_bar: ", M_bar
+    # print "x_bar: ", x_bar
 
     def dump(n, bit_length=BIT_LENGTH):
         s = format(n, '0{}x'.format(bit_length / 4))
         return s.decode('hex')
 
     ser.write(dump(n, bit_length=8)) # TODO uncomment me to send the length
-    print repr(dump(n, bit_length=8))
+    # print repr(dump(n, bit_length=8))
     ser.write(dump(exponent.bit_length() - 1, bit_length=8)) # TODO uncomment me to send the length
-    print repr(dump(exponent.bit_length() - 1, bit_length=8))
+    # print repr(dump(exponent.bit_length() - 1, bit_length=8))
     ser.write(dump(x_bar))
-    print repr(dump(x_bar))  # 435, 0x01b3
+    # print repr(dump(x_bar))  # 435, 0x01b3
     ser.write(dump(M_bar))
-    print repr(dump(M_bar))  # 571, 0x023b
+    # print repr(dump(M_bar))  # 571, 0x023b
     ser.write(dump(exponent))
-    print repr(dump(exponent))  # 300, 0x012c
+    # print repr(dump(exponent))  # 300, 0x012c
     ser.write(dump(N))
-    print repr(dump(N))  # 589, 0x024d
+    # print repr(dump(N))  # 589, 0x024d
     val = None
     val = ser.read(size=BIT_LENGTH/8)
     if val:
@@ -109,9 +109,9 @@ CIPHER = encrypt(MESSAGE)
 print 'encrypted:', CIPHER
 print 'decrypted:', decrypt(CIPHER)
 
-hex_M = binascii.hexlify(MESSAGE)
-M = int(hex_M, 16)
-print '^^^ should be ^^^', hex(pow(M, E, N))
+# hex_M = binascii.hexlify(MESSAGE)
+# M = int(hex_M, 16)
+# print '^^^ should be ^^^', hex(pow(M, E, N))
 
 # A = 199
 # B = 300
