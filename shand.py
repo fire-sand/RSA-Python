@@ -5,6 +5,8 @@ import binascii
 
 from random import choice
 
+BITLENGTH = 256
+
 p = 1
 _B = 2**p
 
@@ -115,7 +117,7 @@ ser.isOpen()
 time.sleep(2)
 
 
-def dump(n, bit_length=16):
+def dump(n, bit_length=BITLENGTH):
     s = format(n, '0{}x'.format(bit_length / 4))
     # s = format'%032x' % n
     # if len(s) & 1:
@@ -153,8 +155,9 @@ print repr(dump(B))
 ser.write(dump(M))
 print repr(dump(M))
 val = None
+print "==="
 while True:
-    val = ser.read(size=2)
+    val = ser.read()
     if val:
         print binascii.hexlify(val)
 
