@@ -64,8 +64,8 @@ def mon_pro(A, B, M, n):
     return P
 
 
-def encrypt(M):
-    M = int(binascii.hexlify(M),16)
+def mod_exp(M, exponent):
+    # M = int(binascii.hexlify(M),16)
 
     # These 3 lines are still kind of hard
     r = 2**(255 * p)
@@ -81,22 +81,33 @@ def encrypt(M):
 
     ser.write(dump(n, bit_length=8)) # TODO uncomment me to send the length
     print repr(dump(n, bit_length=8))
-    ser.write(dump(E.bit_length() - 1, bit_length=8)) # TODO uncomment me to send the length
-    print repr(dump(E.bit_length() - 1, bit_length=8))
+    ser.write(dump(exponent.bit_length() - 1, bit_length=8)) # TODO uncomment me to send the length
+    print repr(dump(exponent.bit_length() - 1, bit_length=8))
     ser.write(dump(x_bar))
     print repr(dump(x_bar))  # 435, 0x01b3
     ser.write(dump(M_bar))
     print repr(dump(M_bar))  # 571, 0x023b
-    ser.write(dump(E))
-    print repr(dump(E))  # 300, 0x012c
+    ser.write(dump(exponent))
+    print repr(dump(exponent))  # 300, 0x012c
     ser.write(dump(N))
     print repr(dump(N))  # 589, 0x024d
     val = None
     val = ser.read(size=BIT_LENGTH/8)
     if val:
-        print binascii.hexlify(val)
+        return binascii.hexlify(val).decode(16)
 
-encrypt(MESSAGE)
+    return None
+
+
+def encrypt(M):
+    return mod_exp(int(binascii.hexlify(M),16), E)
+
+def decrypt(C):
+    return mod_exp(int(binascii.hexlify(C),16), D)
+
+CIPHER = encrypt(MESSAGE)
+print 'encrypted:', CIPHER
+print 'decrypted:', decrypt(CIPHER)
 
 hex_M = binascii.hexlify(MESSAGE)
 M = int(hex_M, 16)
