@@ -72,13 +72,23 @@ def main():
     message = sys.argv[1][:BIT_LENGTH / 8]
 
     print 'Encrypting: %s with \nRSA Encryption Key: (%d, %d)...' % (message, E, N)
-    CIPHER = encrypt()
-    print 'Ciphertext:', CIPHER
+
+    t = time.time()
+    ciphertext = encrypt(message)
+    encryption_time = time.time() - t
+
+    print 'Ciphertext:', ciphertext
 
     time.sleep(1)
 
     print 'Decrypting: %s with \nRSA Decryption Key: (%d, %d)...' % (message, D, N)
-    print 'Recovered plaintext:', decrypt(CIPHER)
+    t = time.time()
+    plaintext = decrypt(ciphertext)
+    decryption_time = time.time() - t
+    print 'Recovered plaintext:', plaintext
+
+    print 'Encryption took', encryption_time
+    print 'Decryption took', decryption_time
 
 
 if __name__ == '__main__':
