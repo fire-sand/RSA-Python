@@ -1,150 +1,178 @@
-import hashlib
+import binascii
+import math
+import serial
+import sys
 import time
 
-p = 0xfc6e1048c5dacd074e21ac83f4c3ee79c5df5f15c6272e226f2edf0e3b04a98df5aae23f54b79a166c6c9e6d5e37b6ab56adfad71e7dd856ac15059f0fe2f90eda03aff0511f01ea3a6a0bac921f9378cbe76cab669f315ce11302fc9907e226bce5c9f62cf50f5afa66ed1b52ac1b3d211b637190feade24a3074f36a0e4e23
-q = 0xf4fa8f3fbc110afc181cbe2e1090dff9352eab964aa3cf17027d30f4c60be843dc25f50b37146b2d42aad58f87a1a789fe433cda77d6a3f3994d5f76510e8c4e66ea4856d21c6d11200c15582566e938cb5790929c4ffa76b6d8d7c643c8adea1f93c8de81c9a88d2c5082755b29883c42a35b38c8515d937ff6802ea1d14949
-e = 0x10001
-n = 0xf18ff84197460d9e7fdd494f48c4cadb96eeee61bdae5b245fe090da9dc74d8e682cc0588a06fc8dae5f4ec9c8eafa0be35aaa4ef3ab12cb7a9528859a2b3d3f29c0d0b3e5ef1f86a7829081f8618b3f5cc43e2d13500b15081f3582afde29f93afa4c75ccbfae76de2a450b7e4d28eb9204df1ac299b2921b131f5ca8d65e95d57101d1f250070c9f10d84330e3f7775d51a9e65106845251c59577415168433ceccbcc8cbabf9d51a8bbff0901fd26261bf5eba8b8ead797266d8ce7d7097adb9d5296482eced88bfc70ae0a62bf4eb35d861297ed46926fd971d9c9f9d9e655ad16b58270238eee17afd78c3765aa0a67dae01afc782b31dce1c31fef42fb
-d = 0xeb865f1cbcbcfdec6b693be044e8338e35349352d3599bddf4698572d2618fb9e8d2b15be2807b603d030a53ee454535b020276bc1632c791ef52dc44e1418ac6c2e668ef102dc6f33063795b1b291cd5ecaac80d092bbab6ef6d6faac34e621ee223bc8a3b0c50f7b0025bfd60eaf763831edc22eb9230617c5e64f370384c59791a11b4fad2ebb441ecfdbba67e42b35100fc100fdc97434944dad923465a1c238488735178eb474b04850652d6703103e27a9816350f313251ac847cba2ac26b5104d988e7f0ab10deebffe5d69c9bbaffde39fbdbe201372c15d0631ba9e9c84e0f1a616180b4ddc07efd145e9cbfbc36910f4dc04463f6f7edf732af031
+from random import choice
 
-totient = (p - 1) * (q - 1)
-k = 2048
-r = pow(2, 2048)
-r_ = r - 1
-r_inv = None
-n_prime = None
+p = 1
+_B = 2**p
 
+N = 0x77b3ce7f6114022ec5affbe9073510714681b8ea710c126ecdff65057a35b1db
+E = 0x10001
+D = 0x39200a3027f8108299bd3e8f1aed6c06bbbb26977b689af6810777fc10b05da1
+n = 255
 
-def extended_gcd(a, b):
-    """Returns x,y such that a*x + b*y = gcd(a,b).
-
-    In our typical usage, gcd(a, b) should always be 1. Uses the extended
-    euclidean algorithm as described here:
-    https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm
-    """
-    s, old_s = 0, 1
-    t, old_t = 1, 0
-    r, old_r = b, a
-
-    while r != 0:
-        q = old_r / r
-        old_r, r = r, old_r - q * r
-        old_s, s = s, old_s - q * s
-        old_t, t = t, old_t - q * t
-
-    if old_r != 1:
-        raise Exception('invalid: gcd != 1')
-
-    # TODO: check for more cases(?)
-    if old_s < 0 and old_t > 0:
-        old_s += b
-        old_t -= a
-
-    return old_s, old_t
-
-# print extended_gcd(16, 13)
-
-# TODO: tests
-#
-# r_inv, n_prime = extended_gcd(3, 26)
-# print r_inv, n_prime
-# print ((3 * r_inv) % 26)
-# print ""
-#
-# r_inv, n_prime = extended_gcd(47, 157)
-# print r_inv, n_prime
-# print ((47 * r_inv) % 157)
-# print ((157 * -n_prime) % 47)
-# print ""
+# M is not allowed to be even
+# Hardcoded for _B = 4
+# MUS = [None, 3, None, 1]
+MUS = [None, 1]
 
 
-def mon_pro(a, b, n_prime, n, r_):
-    t = a * b
-    m = (t * n_prime) & r_
-    u = (t + m * n) >> 2048
-    return u - n if u >= n else u
-
-# TODO: tests
-# print mod_mul(5, 7, 39)
-# print mod_mul(57, 91, 51)
-# print mod_mul(1997, 791, n)
+BIT_LENGTH = 256
 
 
-def mod_exp(a, e, n):
-    """Returns a^e % n
+MESSAGE = sys.argv[1][:BIT_LENGTH / 8]
 
-    Montgomery exponentiation method.
-    """
-    global r_inv, n_prime
-    r_inv, n_prime = extended_gcd(r, n)
-    n_prime = -n_prime
-    a_bar = a * r % n
-    x_bar = r % n
+ser = serial.Serial(
+    port='/dev/ttyUSB1',
+    baudrate=9600,
+    parity=serial.PARITY_NONE,
+    stopbits=serial.STOPBITS_ONE,
+    bytesize=serial.EIGHTBITS,
+    timeout=None
+)
 
-    for bit in bin(e)[2:]:
-        x_bar = mon_pro(x_bar, x_bar, n_prime, n, r_)
-        if bit == '1':
-            x_bar = mon_pro(a_bar, x_bar, n_prime, n, r_)
-    return mon_pro(x_bar, 1, n_prime, n, r_)
+ser.isOpen()
+
+time.sleep(2)
 
 
-def pow_mod(a, b, c):
-    """Returns a^b % c
+def mon_pro(A, B, M, n):
+    P = 0
 
-    Binary method of exponentiation based on bits of b.
-    """
-    ret = 1
-    while b:
-        if b & 1:
-            ret = ret * a % c
-        b >>= 1
-        a = a * a % c
-    return ret
+    a0 = A & (_B - 1)
+    m0 = M & (_B - 1)
+    mu = MUS[m0]
+    for i in xrange(n):
+        # Get t'th word of B
+        bt = (B >> (i * p)) & (_B - 1)
 
-# print mod_exp(5, 7, n)
-# print pow(5, 7, n)
+        # Get 0'th word of P
+        p0 = P & (_B - 1)
 
+        # Calculate qt
+        qt = (mu * (a0 * bt + p0)) & (_B - 1)
 
-def sign(m, pow_func=pow):
-    h = int(hashlib.sha256(m).hexdigest(), 16)
-    return pow_func(h, d, n)
+        # Calculate new value of P
+        # divide by _B is the same as shift right by p
+        # print "big: ", A
+        # print "small; ", bt
+        # print "big: ", M
+        # print "small: ", qt
+        P = (A * bt + P + qt * M) >> p
+        # print P
 
-
-def verify(m, s, pow_func=pow):
-    h = int(hashlib.sha256(m).hexdigest(), 16)
-    return h == pow_func(s, e, n)
-
-
-def main():
-    m = "hello world"
-
-    N = 50
-
-    # Exponentiation with Python built in pow function
-    t = time.time()
-    for i in xrange(N):
-        s = sign(m, pow_func=pow)
-        verify(m, s, pow_func=pow)
-    print 'pow', time.time() - t
-
-    # Binary exponentiation (shift, square, and multiply)
-    t = time.time()
-    for i in xrange(N):
-        s = sign(m, pow_func=pow_mod)
-        verify(m, s, pow_func=pow_mod)
-    print 'pow_mod', time.time() - t
-
-    # Montgomery (we call it mod_exp)
-    t = time.time()
-    for i in xrange(N):
-        s = sign(m, pow_func=mod_exp)
-        verify(m, s, pow_func=mod_exp)
-    print 'montgomery', time.time() - t
-
-    # s = sign(m, pow_func=mod_exp)
-    # print verify(m, s, pow_func=mod_exp)
-    # print verify(m[:-1], s, pow_func=mod_exp)
+    return P
 
 
-if __name__ == '__main__':
-    main()
+def mod_exp(M, exponent):
+    # M = int(binascii.hexlify(M),16)
+
+    # These 3 lines are still kind of hard
+    r = 2**(255 * p)
+    M_bar = (M * r) % N
+    x_bar = r % N
+
+    # print "M_bar: ", M_bar
+    # print "x_bar: ", x_bar
+
+    def dump(n, bit_length=BIT_LENGTH):
+        s = format(n, '0{}x'.format(bit_length / 4))
+        return s.decode('hex')
+
+    ser.write(dump(n, bit_length=8))  # TODO uncomment me to send the length
+    # print repr(dump(n, bit_length=8))
+    # TODO uncomment me to send the length
+    ser.write(dump(exponent.bit_length() - 1, bit_length=8))
+    # print repr(dump(exponent.bit_length() - 1, bit_length=8))
+    ser.write(dump(x_bar))
+    # print repr(dump(x_bar))  # 435, 0x01b3
+    ser.write(dump(M_bar))
+    # print repr(dump(M_bar))  # 571, 0x023b
+    ser.write(dump(exponent))
+    # print repr(dump(exponent))  # 300, 0x012c
+    ser.write(dump(N))
+    # print repr(dump(N))  # 589, 0x024d
+    val = None
+    val = ser.read(size=BIT_LENGTH / 8)
+    if val:
+        return binascii.hexlify(val).decode('hex')
+
+    return None
+
+
+def encrypt(M):
+    return mod_exp(int(binascii.hexlify(M), 16), E)
+
+
+def decrypt(C):
+    return mod_exp(int(binascii.hexlify(C), 16), D)
+
+CIPHER = encrypt(MESSAGE)
+print 'encrypted:', CIPHER
+print 'decrypted:', decrypt(CIPHER)
+
+# hex_M = binascii.hexlify(MESSAGE)
+# M = int(hex_M, 16)
+# print '^^^ should be ^^^', hex(pow(M, E, N))
+
+# A = 199
+# B = 300
+# M = 589
+# nA = int(math.ceil(A.bit_length() / float(p)))
+# nB = int(math.ceil(B.bit_length() / float(p)))
+# nM = int(math.ceil(M.bit_length() / float(p)))
+# n = max(nA, max(nB, nM))
+# print n
+
+# print "----- Mon exp ------"
+# print mod_exp(A, B, M, n); # a ^ b mod M
+# print "^^ should be" , pow(A, B, M);
+
+# SEND TO FPGA
+
+
+# def dump(n, bit_length=256):
+#     s = format(n, '0{}x'.format(bit_length / 4))
+#     return s.decode('hex')
+
+# dn = dump(M)
+# print bin(M)
+# print '%0256x' % M
+# print repr(dn)
+# print len(dn)
+
+# Need to change to M_bar and X_bar
+# r = 2**(n * p)
+# M_bar = (A * r) % M
+# X_bar = r % M
+
+# parameter RX_MP_COUNT = 0;
+# parameter RX_E_IDX = 1;
+# parameter RX_XBAR = 2;
+# parameter RX_MBAR = 3;
+# parameter RX_E = 4;
+# parameter RX_N = 5;
+
+# ser.write(dump(n, bit_length=8)) # TODO uncomment me to send the length
+# print n
+# ser.write(dump(B.bit_length() - 1, bit_length=8)) # TODO uncomment me to send the length
+# print B.bit_length() - 1
+# ser.write(dump(X_bar))
+# print X_bar  # 435, 0x01b3
+# ser.write(dump(M_bar))
+# print binascii.hexlify(dump(M_bar)), len(binascii.hexlify(dump(M_bar)))
+# print M_bar  # 571, 0x023b
+# ser.write(dump(B))
+# print B  # 300, 0x012c
+# ser.write(dump(M))
+# print M  # 589, 0x024d
+# val = None
+# while True:
+#     val = ser.read(size=4)
+#     if val:
+#         print binascii.hexlify(val)
+
+# ser.close()
