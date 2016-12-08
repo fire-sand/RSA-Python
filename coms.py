@@ -94,7 +94,7 @@ def mod_exp(M, exponent):
     val = None
     val = ser.read(size=BIT_LENGTH/8)
     if val:
-        return binascii.hexlify(val).decode(16)
+        return binascii.hexlify(val).decode('hex')
 
     return None
 
