@@ -35,10 +35,10 @@ class binary (object):
     # Math
 
     def __add__(self, other):
-        pass
+        return self.val + other.val
 
     def __sub__(self, other):
-        pass
+        return self.val - other.val
 
     def __mul__(self, other):
         pass
